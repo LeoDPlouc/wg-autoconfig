@@ -1,7 +1,6 @@
-package wgConfig
+package structs
 
-type Peer struct{
-
+type Peer struct {
 }
 
 type WgConfig struct {
