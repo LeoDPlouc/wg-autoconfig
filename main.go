@@ -4,17 +4,25 @@ import (
 	"fmt"
 	"os"
 	// ini "gopkg.in/ini.v1"
-	// yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
+	"github.com/LeoDPlouc/wg-autoconfig/wgConfig"
 )
-
-type wgConfig struct {
-}
 
 type iniFile struct {
 }
 
 func parseYaml(yamlTxt string) wgConfig {
-	os.ReadFile(yamlTxt)
+	b, err := os.ReadFile(yamlTxt)
+
+	if err == nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	var conf wgConfig
+	yaml.Unmarshal(b, conf)
+
+	return conf
 }
 
 func parseIni(conf wgConfig) iniFile {
