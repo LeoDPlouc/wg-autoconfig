@@ -1,14 +1,14 @@
 package structs
 
 type Peer struct {
-	name string
-	publicKey string
+	name       string
+	publicKey  string
 	privateKey string
-	address string
-	endpoint string
+	address    string
+	endpoint   string
 }
 
 type WgConfig struct {
-	peer []Peer
+	peer                []Peer
 	persistentKeepAlive uint16
 }

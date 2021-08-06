@@ -5,12 +5,11 @@ import (
 	"os"
 
 	// ini "gopkg.in/ini.v1"
-	yaml "gopkg.in/yaml.v2"
 	"github.com/LeoDPlouc/wg-autoconfig/structs"
-	//"structs/WgConfig"
+	yaml "gopkg.in/yaml.v2"
 )
 
-func parseYaml(yamlTxt string) wgConfig {
+func parseYaml(yamlTxt string) structs.WgConfig {
 	b, err := os.ReadFile(yamlTxt)
 
 	if err == nil {
@@ -18,14 +17,13 @@ func parseYaml(yamlTxt string) wgConfig {
 		os.Exit(1)
 	}
 
-	var conf wgConfig
+	var conf structs.WgConfig
 	yaml.Unmarshal(b, conf)
 
 	return conf
 }
 
-func parseIni(conf wgConfig) iniFile {
-
+func parseIni(conf structs.WgConfig) structs.IniFile {
 }
 
 func main() {
