@@ -1,4 +1,4 @@
-module wg-autoconfig
+module github.com/LeoDPlouc/wg-autoconfig
 
 go 1.16
 

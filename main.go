@@ -3,13 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
+
 	// ini "gopkg.in/ini.v1"
 	yaml "gopkg.in/yaml.v2"
-	"github.com/LeoDPlouc/wg-autoconfig/wgConfig"
+	"github.com/LeoDPlouc/wg-autoconfig/structs"
+	//"structs/WgConfig"
 )
-
-type iniFile struct {
-}
 
 func parseYaml(yamlTxt string) wgConfig {
 	b, err := os.ReadFile(yamlTxt)
