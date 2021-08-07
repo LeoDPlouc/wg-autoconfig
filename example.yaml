@@ -10,6 +10,7 @@ peers:
     allowedips: 10.0.0.0/24
     postup: iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o ens3 -j MASQUERADE
     postdown: iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o ens3 -j MASQUERADE
+    listeningport: 20
 
   - name: Smartphone
     publickey: ExamplePubKey2
@@ -25,6 +26,7 @@ peers:
     connectedto:
       - RaspberryPi
     allowedips: 10.0.0.0/24
+    listeningport: 20
 
   - name: RaspberryPi
     publickey: ExamplePubKey4
@@ -34,3 +36,4 @@ peers:
     connectedto:
       - Desktop
     allowedips: 10.0.0.0/24
+    listeningport: 20

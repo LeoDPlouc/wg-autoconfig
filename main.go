@@ -77,9 +77,14 @@ func parseIni(conf structs.WgConfig) map[string]*ini.File {
 					sec.NewKey("Endpoint", connection.Endpoint)
 					sec.NewKey("PersistentKeepalive", fmt.Sprint(conf.PersistentKeepAlive))
 				}
-				//if this node is a lighthouse add the ip range to redirect, wich should exclusivly contain the address of the peer
+				//if this node is a lighthouse add the ip range to redirect, wich should exclusivly contain the address of the peer and a port to listen to
 				if peer.Lighthouse {
 					sec.NewKey("AllowedIps", connection.Address)
+					sec.NewKey("ListeningPort", peer.ListeningPort)
+				}
+				//if a peer is directly connected to this node specify a port to listen to
+				if hasConnections(peer.Name, conf.Peers) {
+					sec.NewKey("ListeningPort", peer.ListeningPort)
 				}
 			}
 		}
@@ -112,6 +117,15 @@ func contains(s string, array []string) bool {
 	//Return true if an array of string contains a given string
 	for _, str := range array {
 		if str == s {
+			return true
+		}
+	}
+	return false
+}
+
+func hasConnections(name string, peers []structs.Peer) bool {
+	for _, peer := range peers {
+		if contains(name, peer.ConnectedTo) {
 			return true
 		}
 	}

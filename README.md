@@ -18,6 +18,8 @@ The config file is written in yaml.
 - Lighthouse : Must be a bool. A light house is a node with a static IP accessible via internet. All the nodes will be connected with all the lighthouses. This assure that all nodes are accessible by all the others node as long as all the lighthouses are alive.
 - ConnectedTo : If some nodes are directly accessible to other nodes they can be peered. For example two nodes living in the same local network
 
+Lighthouses and nodes wich receive direct connections must expose a port
+
 #### /!\ ALL KEYS MUST BE WRITTEN LOWERCASE /!\
 
 
@@ -36,6 +38,7 @@ peers:
     allowedips: 10.0.0.0/24
     postup: iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o ens3 -j MASQUERADE
     postdown: iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o ens3 -j MASQUERADE
+    listeningport: 20
 
   - name: Smartphone
     publickey: ExamplePubKey2
@@ -51,6 +54,7 @@ peers:
     connectedto:
       - RaspberryPi
     allowedips: 10.0.0.0/24
+    listeningport: 20
 
   - name: RaspberryPi
     publickey: ExamplePubKey4
@@ -60,7 +64,7 @@ peers:
     connectedto:
       - Desktop
     allowedips: 10.0.0.0/24
-
+    listeningport: 20
 ```
 
 ## How to build it ?
