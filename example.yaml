@@ -1,6 +1,6 @@
 dns: 1.1.1.1
 persistentkeepalive: 50
-peers:
+nodes:
   - name: Server
     publickey: ExamplePubKey1
     privatekey: ExamplePriKey1

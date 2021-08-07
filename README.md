@@ -28,7 +28,7 @@ Here is an example with a VPS accessible via internet with a static IP, a raspbe
 ```yaml
 dns: 1.1.1.1
 persistentkeepalive: 50
-peers:
+nodes:
   - name: Server
     publickey: ExamplePubKey1
     privatekey: ExamplePriKey1
