@@ -57,6 +57,12 @@ func parseIni(conf structs.WgConfig) map[string]*ini.File {
 		if peer.Lighthouse {
 			sec.NewKey("PostUp", peer.PostUp)
 			sec.NewKey("PostDown", peer.PostDown)
+			sec.NewKey("ListeningPort", peer.ListeningPort)
+		}
+
+		//if a peer is directly connected to this node specify a port to listen to
+		if hasConnections(peer.Name, conf.Peers) {
+			sec.NewKey("ListeningPort", peer.ListeningPort)
 		}
 
 		for i, connection := range conf.Peers {
@@ -80,11 +86,6 @@ func parseIni(conf structs.WgConfig) map[string]*ini.File {
 				//if this node is a lighthouse add the ip range to redirect, wich should exclusivly contain the address of the peer and a port to listen to
 				if peer.Lighthouse {
 					sec.NewKey("AllowedIps", connection.Address)
-					sec.NewKey("ListeningPort", peer.ListeningPort)
-				}
-				//if a peer is directly connected to this node specify a port to listen to
-				if hasConnections(peer.Name, conf.Peers) {
-					sec.NewKey("ListeningPort", peer.ListeningPort)
 				}
 			}
 		}
