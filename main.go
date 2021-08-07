@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
+	"regexp"
 
 	ini "gopkg.in/ini.v1"
 	yaml "gopkg.in/yaml.v2"
@@ -65,6 +67,22 @@ func parseIni(conf structs.WgConfig) map[string]*ini.File {
 	return iniFiles
 }
 
+func remvoveDigits(inis map[string]*ini.File) map[string]string {
+	iniTxts := make(map[string]string, len(inis))
+	re := regexp.MustCompile("Peer[0-9]+")
+
+	for name, iniFile := range inis {
+		buffer := bytes.Buffer{}
+		iniFile.WriteTo(&buffer)
+
+		iniTxt := re.ReplaceAll(buffer.Bytes(), []byte("Peer"))
+
+		iniTxts[name] = string(iniTxt)
+	}
+
+	return iniTxts
+}
+
 func contains(s string, array []string) bool {
 	for _, str := range array {
 		if str == s {
@@ -78,12 +96,10 @@ func main() {
 	var yamlFile = os.Args[1]
 	var wgConf = parseYaml(yamlFile)
 	var inis = parseIni(wgConf)
+	var inisText = remvoveDigits(inis)
 
-	for name, iniFile := range inis {
-		err := iniFile.SaveTo(name + ".conf")
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+	for name, iniTxt := range inisText {
+		f, _ := os.Create(name + ".conf")
+		f.WriteString(iniTxt)
 	}
 }
