@@ -63,9 +63,9 @@ peers:
 
 ## How to build it ?
 
-This tool is a standard go program and must be compile like every go program.
+This tool is a standard go program and must be compiled like every go program.
 
 Make sure go is installed 
 <br>Clone this repo under $GOPATH/src
 <br>Open a terminal in the cloned repo
-> go build
+<br>run `go build`
