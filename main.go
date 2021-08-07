@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"os"
 
-	// ini "gopkg.in/ini.v1"
-	"github.com/LeoDPlouc/wg-autoconfig/structs"
+	ini "gopkg.in/ini.v1"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/LeoDPlouc/wg-autoconfig/structs"
 )
 
 func parseYaml(yamlTxt string) structs.WgConfig {
+	fmt.Println("Opening ", yamlTxt)
+
 	b, err := os.ReadFile(yamlTxt)
 
 	if err == nil {
@@ -17,17 +20,61 @@ func parseYaml(yamlTxt string) structs.WgConfig {
 		os.Exit(1)
 	}
 
+	fmt.Println("Unmarshalling")
+
 	var conf structs.WgConfig
 	yaml.Unmarshal(b, conf)
 
 	return conf
 }
 
-func parseIni(conf structs.WgConfig) structs.IniFile {
+func parseIni(conf structs.WgConfig) map[string]ini.File {
+	var iniFiles = make(map[string]ini.File, len(conf.Peers))
+
+	for _, peer := range conf.Peers {
+
+		fmt.Println("Parsing peer ", peer.Name)
+
+		var iniFile = ini.File{}
+
+		sec, _ := iniFile.NewSection("Interface")
+
+		sec.NewKey("Address", peer.Address)
+		sec.NewKey("PrivateKey", peer.PrivateKey)
+		sec.NewKey("DNS", conf.Dns)
+
+		sec, _ = iniFile.NewSection("Interface")
+
+		for _, connection := range conf.Peers {
+			if connection.Lighthouse || contains(peer.Name, connection.ConnectedTo) {
+				sec.NewKey("PublicKey", connection.PublicKey)
+				sec.NewKey("AllowedIps", connection.AllowedIps)
+				sec.NewKey("Endpoint", connection.Endpoint)
+				sec.NewKey("PersistentKeepalive", fmt.Sprint(conf.PersistentKeepAlive))
+			}
+		}
+
+		iniFiles[peer.Name] = iniFile
+	}
+
+	return iniFiles
+}
+
+func contains(s string, array []string) bool {
+	for _, str := range array {
+		if str == s {
+			return true
+		}
+	}
+	return false
 }
 
 func main() {
 	var yamlFile = os.Args[1]
-	/*var wgConf = */ parseYaml(yamlFile)
-	//var ini = parseIni(wgConf)
+	var wgConf = parseYaml(yamlFile)
+	var inis = parseIni(wgConf)
+
+	for name, iniFile := range inis {
+		iniFile.SaveTo(name + ".conf")
+	}
 }
