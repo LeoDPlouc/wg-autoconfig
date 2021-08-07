@@ -6,6 +6,8 @@ Here is a tool to write wireguard interface for all your nodes with a config fil
 Write your config file (more on that later).
 <br>Run `wg-config <your-config-file>`
 
+If you're on Linux and have wireguard installed you can run `./genkey.sh` to generate a pair of private and public key
+
 ## How to write the config file ?
 
 The config file is written in yaml.
