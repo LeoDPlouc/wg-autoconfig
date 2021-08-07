@@ -63,7 +63,7 @@ func parseIni(conf structs.WgConfig) map[string]*ini.File {
 
 		//if peers are directly connected to this node specify a port to listen to
 		if hasConnections(node.Name, conf.Nodes) || node.Lighthouse {
-			sec.NewKey("ListeningPort", node.ListeningPort)
+			sec.NewKey("ListenPort", node.ListenPort)
 		}
 
 		for i, peer := range conf.Nodes {
@@ -74,7 +74,7 @@ func parseIni(conf structs.WgConfig) map[string]*ini.File {
 
 				//if the node must connect to the peer add the endpoint and the keep alive rate
 				if peer.Lighthouse || contains(node.Name, peer.ConnectedTo) {
-					sec.NewKey("Endpoint", peer.Endpoint + ":" + peer.ListeningPort)
+					sec.NewKey("Endpoint", peer.Endpoint+":"+peer.ListenPort)
 					sec.NewKey("PersistentKeepalive", fmt.Sprint(conf.PersistentKeepAlive))
 				}
 				//if the peer receive a direct connection from this node add the ip range to redirect, wich should exclusivly contain the address of the peer

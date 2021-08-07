@@ -11,7 +11,7 @@ type Node struct {
 	AllowedIps    string
 	PostUp        string
 	PostDown      string
-	ListeningPort string
+	ListenPort string
 }
 
 type WgConfig struct {
