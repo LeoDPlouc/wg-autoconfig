@@ -50,6 +50,11 @@ func parseIni(conf structs.WgConfig) map[string]*ini.File {
 		sec.NewKey("PrivateKey", peer.PrivateKey)
 		sec.NewKey("DNS", conf.Dns)
 
+		if peer.Lighthouse {
+			sec.NewKey("PostUp", peer.PostUp)
+			sec.NewKey("PostDown", peer.PostDown)
+		}
+
 		for i, connection := range conf.Peers {
 			if (connection.Lighthouse || contains(peer.Name, connection.ConnectedTo) || peer.Lighthouse) && peer.Name != connection.Name {
 				sec, _ = iniFile.NewSection("Peer" + fmt.Sprint(i))

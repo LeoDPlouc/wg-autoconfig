@@ -8,6 +8,8 @@ peers:
     endpoint: 10.1.1.1
     lighthouse: true
     allowedips: 10.0.0.0/24
+    postup: iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o ens3 -j MASQUERADE
+    postdown: iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o ens3 -j MASQUERADE
 
   - name: Smartphone
     publickey: ExamplePubKey2

@@ -9,6 +9,8 @@ type Peer struct {
 	ConnectedTo []string
 	Lighthouse  bool
 	AllowedIps  string
+	PostUp      string
+	PostDown    string
 }
 
 type WgConfig struct {
