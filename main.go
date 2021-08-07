@@ -15,6 +15,7 @@ import (
 func parseYaml(yamlTxt string) structs.WgConfig {
 	fmt.Println("Opening", yamlTxt)
 
+	//Open the config file
 	b, err := os.ReadFile(yamlTxt)
 
 	if err != nil {
@@ -24,6 +25,7 @@ func parseYaml(yamlTxt string) structs.WgConfig {
 
 	fmt.Println("Unmarshalling")
 
+	//Deserialize the config file
 	var conf structs.WgConfig
 	err = yaml.Unmarshal(b, &conf)
 
@@ -44,32 +46,38 @@ func parseIni(conf structs.WgConfig) map[string]*ini.File {
 
 		var iniFile = ini.Empty()
 
+		//Add Interface section
 		sec, _ := iniFile.NewSection("Interface")
 
 		sec.NewKey("Address", peer.Address)
 		sec.NewKey("PrivateKey", peer.PrivateKey)
 		sec.NewKey("DNS", conf.Dns)
 
+		//If the node is a lighthouse add the keys PostUp and PostDown
 		if peer.Lighthouse {
 			sec.NewKey("PostUp", peer.PostUp)
 			sec.NewKey("PostDown", peer.PostDown)
 		}
 
 		for i, connection := range conf.Peers {
+			//A peer must be added if it's a lighthouse, if it's connected to this node or if the node is lighthouse
 			if (connection.Lighthouse || contains(peer.Name, connection.ConnectedTo) || peer.Lighthouse) && peer.Name != connection.Name {
 				sec, _ = iniFile.NewSection("Peer" + fmt.Sprint(i))
 				sec.NewKey("PublicKey", connection.PublicKey)
 
+				//If the peer is a light house add the defined ip range to redirect, the endpoint of the peer and the keep alive rate
 				if connection.Lighthouse {
 					sec.NewKey("AllowedIps", connection.AllowedIps)
 					sec.NewKey("Endpoint", connection.Endpoint)
 					sec.NewKey("PersistentKeepalive", fmt.Sprint(conf.PersistentKeepAlive))
 				}
+				//if the peer is directly connected add the ip range to redirect, wich should exclusivly contain the address of the peer, the endpoint and the keep alive rate
 				if contains(peer.Name, connection.ConnectedTo) {
 					sec.NewKey("AllowedIps", connection.Address)
 					sec.NewKey("Endpoint", connection.Endpoint)
 					sec.NewKey("PersistentKeepalive", fmt.Sprint(conf.PersistentKeepAlive))
 				}
+				//if this node is a lighthouse add the ip range to redirect, wich should exclusivly contain the address of the peer
 				if peer.Lighthouse {
 					sec.NewKey("AllowedIps", connection.Address)
 				}
@@ -84,12 +92,14 @@ func parseIni(conf structs.WgConfig) map[string]*ini.File {
 
 func remvoveDigits(inis map[string]*ini.File) map[string]string {
 	iniTxts := make(map[string]string, len(inis))
+	//Target "Peer" plus any number of digit
 	re := regexp.MustCompile("Peer[0-9]+")
 
 	for name, iniFile := range inis {
 		buffer := bytes.Buffer{}
 		iniFile.WriteTo(&buffer)
 
+		//Replace the targeted string by only "Peer"
 		iniTxt := re.ReplaceAll(buffer.Bytes(), []byte("Peer"))
 
 		iniTxts[name] = string(iniTxt)
@@ -99,6 +109,7 @@ func remvoveDigits(inis map[string]*ini.File) map[string]string {
 }
 
 func contains(s string, array []string) bool {
+	//Return true if an array of string contains a given string
 	for _, str := range array {
 		if str == s {
 			return true
@@ -113,6 +124,7 @@ func main() {
 	var inis = parseIni(wgConf)
 	var inisText = remvoveDigits(inis)
 
+	//Write each ini into a file with the given name of the node
 	for name, iniTxt := range inisText {
 		f, _ := os.Create(name + ".conf")
 		f.WriteString(iniTxt)
