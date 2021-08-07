@@ -68,13 +68,13 @@ func parseIni(conf structs.WgConfig) map[string]*ini.File {
 				//If the peer is a light house add the defined ip range to redirect, the endpoint of the peer and the keep alive rate
 				if connection.Lighthouse {
 					sec.NewKey("AllowedIps", connection.AllowedIps)
-					sec.NewKey("Endpoint", connection.Endpoint)
+					sec.NewKey("Endpoint", connection.Endpoint + ":" + connection.ListeningPort)
 					sec.NewKey("PersistentKeepalive", fmt.Sprint(conf.PersistentKeepAlive))
 				}
 				//if the peer is directly connected add the ip range to redirect, wich should exclusivly contain the address of the peer, the endpoint and the keep alive rate
 				if contains(peer.Name, connection.ConnectedTo) {
 					sec.NewKey("AllowedIps", connection.Address)
-					sec.NewKey("Endpoint", connection.Endpoint)
+					sec.NewKey("Endpoint", connection.Endpoint + ":" + connection.ListeningPort)
 					sec.NewKey("PersistentKeepalive", fmt.Sprint(conf.PersistentKeepAlive))
 				}
 				//if this node is a lighthouse add the ip range to redirect, wich should exclusivly contain the address of the peer and a port to listen to
@@ -124,6 +124,7 @@ func contains(s string, array []string) bool {
 }
 
 func hasConnections(name string, peers []structs.Peer) bool {
+	//return true if at least one peer has the name of the node in its ConnectTo list
 	for _, peer := range peers {
 		if contains(name, peer.ConnectedTo) {
 			return true
