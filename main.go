@@ -34,8 +34,6 @@ func parseYaml(yamlTxt string) structs.WgConfig {
 		os.Exit(1)
 	}
 
-	fmt.Println(conf)
-
 	return conf
 }
 
