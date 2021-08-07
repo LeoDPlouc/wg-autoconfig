@@ -11,31 +11,36 @@ import (
 )
 
 func parseYaml(yamlTxt string) structs.WgConfig {
-	fmt.Println("Opening ", yamlTxt)
+	fmt.Println("Opening", yamlTxt)
 
 	b, err := os.ReadFile(yamlTxt)
 
-	if err == nil {
-		fmt.Println(err.Error())
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
 	fmt.Println("Unmarshalling")
 
 	var conf structs.WgConfig
-	yaml.Unmarshal(b, conf)
+	err = yaml.Unmarshal(b, &conf)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 
 	return conf
 }
 
-func parseIni(conf structs.WgConfig) map[string]ini.File {
-	var iniFiles = make(map[string]ini.File, len(conf.Peers))
+func parseIni(conf structs.WgConfig) map[string]*ini.File {
+	var iniFiles = make(map[string]*ini.File, len(conf.Peers))
 
 	for _, peer := range conf.Peers {
 
-		fmt.Println("Parsing peer ", peer.Name)
+		fmt.Println("Parsing peer", peer.Name)
 
-		var iniFile = ini.File{}
+		var iniFile = ini.Empty()
 
 		sec, _ := iniFile.NewSection("Interface")
 
@@ -43,9 +48,9 @@ func parseIni(conf structs.WgConfig) map[string]ini.File {
 		sec.NewKey("PrivateKey", peer.PrivateKey)
 		sec.NewKey("DNS", conf.Dns)
 
-		sec, _ = iniFile.NewSection("Interface")
-
 		for _, connection := range conf.Peers {
+			sec, _ = iniFile.NewSection("Peer")
+			
 			if connection.Lighthouse || contains(peer.Name, connection.ConnectedTo) {
 				sec.NewKey("PublicKey", connection.PublicKey)
 				sec.NewKey("AllowedIps", connection.AllowedIps)
@@ -75,6 +80,10 @@ func main() {
 	var inis = parseIni(wgConf)
 
 	for name, iniFile := range inis {
-		iniFile.SaveTo(name + ".conf")
+		err := iniFile.SaveTo(name + ".conf")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	}
 }

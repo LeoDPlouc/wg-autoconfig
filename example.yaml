@@ -1,0 +1,34 @@
+dns: 1.1.1.1
+persistentkeepalive: 50
+peers:
+  - name: Server
+    publickey: ExamplePubKey1
+    privatekey: ExamplePriKey1
+    address: 10.0.0.1/32
+    endpoint: 10.1.1.1
+    lighthouse: true
+    allowedips: 10.0.0.0/24
+
+  - name: Smartphone
+    publickey: ExamplePubKey2
+    privatekey: ExamplePriKey2
+    address: 10.0.0.2/32
+    allowedips: 10.0.0.0/24
+
+  - name: Desktop
+    publickey: ExamplePubKey3
+    privatekey: ExamplePriKey3
+    address: 10.0.0.3/32
+    endpoint: 10.2.2.2
+    connectedto:
+      - RaspberryPi
+    allowedips: 10.0.0.0/24
+
+  - name: RaspberryPi
+    publickey: ExamplePubKey4
+    privatekey: ExamplePriKey4
+    address: 10.0.0.4/32
+    endpoint: 10.3.3.3
+    connectedto:
+      - Desktop
+    allowedips: 10.0.0.0/24
