@@ -1,6 +1,6 @@
 package structs
 
-type Peer struct {
+type Node struct {
 	Name          string
 	PublicKey     string
 	PrivateKey    string
@@ -15,7 +15,7 @@ type Peer struct {
 }
 
 type WgConfig struct {
-	Peers               []Peer
+	Nodes               []Node
 	PersistentKeepAlive uint16
 	Dns                 string
 }

@@ -38,59 +38,55 @@ func parseYaml(yamlTxt string) structs.WgConfig {
 }
 
 func parseIni(conf structs.WgConfig) map[string]*ini.File {
-	var iniFiles = make(map[string]*ini.File, len(conf.Peers))
+	var iniFiles = make(map[string]*ini.File, len(conf.Nodes))
 
-	for _, peer := range conf.Peers {
+	for _, node := range conf.Nodes {
 
-		fmt.Println("Parsing peer", peer.Name)
+		fmt.Println("Parsing peer", node.Name)
 
 		var iniFile = ini.Empty()
 
 		//Add Interface section
 		sec, _ := iniFile.NewSection("Interface")
 
-		sec.NewKey("Address", peer.Address)
-		sec.NewKey("PrivateKey", peer.PrivateKey)
+		sec.NewKey("Address", node.Address)
+		sec.NewKey("PrivateKey", node.PrivateKey)
 		sec.NewKey("DNS", conf.Dns)
 
 		//If the node is a lighthouse add the keys PostUp and PostDown
-		if peer.Lighthouse {
-			sec.NewKey("PostUp", peer.PostUp)
-			sec.NewKey("PostDown", peer.PostDown)
-			sec.NewKey("ListeningPort", peer.ListeningPort)
+		if node.Lighthouse {
+			sec.NewKey("PostUp", node.PostUp)
+			sec.NewKey("PostDown", node.PostDown)
 		}
 
-		//if a peer is directly connected to this node specify a port to listen to
-		if hasConnections(peer.Name, conf.Peers) {
-			sec.NewKey("ListeningPort", peer.ListeningPort)
+		//if peers are directly connected to this node specify a port to listen to
+		if hasConnections(node.Name, conf.Nodes) || node.Lighthouse {
+			sec.NewKey("ListeningPort", node.ListeningPort)
 		}
 
-		for i, connection := range conf.Peers {
-			//A peer must be added if it's a lighthouse, if it's connected to this node or if the node is lighthouse
-			if (connection.Lighthouse || contains(peer.Name, connection.ConnectedTo) || peer.Lighthouse) && peer.Name != connection.Name {
+		for i, peer := range conf.Nodes {
+			//A peer must be added if it's a lighthouse, if it's connected to this node or if the node is a lighthouse
+			if (peer.Lighthouse || contains(node.Name, peer.ConnectedTo) || node.Lighthouse) && node.Name != peer.Name {
 				sec, _ = iniFile.NewSection("Peer" + fmt.Sprint(i))
-				sec.NewKey("PublicKey", connection.PublicKey)
+				sec.NewKey("PublicKey", peer.PublicKey)
 
-				//If the peer is a light house add the defined ip range to redirect, the endpoint of the peer and the keep alive rate
-				if connection.Lighthouse {
-					sec.NewKey("AllowedIps", connection.AllowedIps)
-					sec.NewKey("Endpoint", connection.Endpoint + ":" + connection.ListeningPort)
+				//if the node must connect to the peer add the endpoint and the keep alive rate
+				if peer.Lighthouse || contains(node.Name, peer.ConnectedTo) {
+					sec.NewKey("Endpoint", peer.Endpoint + ":" + peer.ListeningPort)
 					sec.NewKey("PersistentKeepalive", fmt.Sprint(conf.PersistentKeepAlive))
 				}
-				//if the peer is directly connected add the ip range to redirect, wich should exclusivly contain the address of the peer, the endpoint and the keep alive rate
-				if contains(peer.Name, connection.ConnectedTo) {
-					sec.NewKey("AllowedIps", connection.Address)
-					sec.NewKey("Endpoint", connection.Endpoint + ":" + connection.ListeningPort)
-					sec.NewKey("PersistentKeepalive", fmt.Sprint(conf.PersistentKeepAlive))
+				//if the peer receive a direct connection from this node add the ip range to redirect, wich should exclusivly contain the address of the peer
+				if node.Lighthouse || contains(node.Name, peer.ConnectedTo) {
+					sec.NewKey("AllowedIps", peer.Address)
 				}
-				//if this node is a lighthouse add the ip range to redirect, wich should exclusivly contain the address of the peer and a port to listen to
+				//If the peer is a light house add the defined ip range to redirect
 				if peer.Lighthouse {
-					sec.NewKey("AllowedIps", connection.Address)
+					sec.NewKey("AllowedIps", peer.AllowedIps)
 				}
 			}
 		}
 
-		iniFiles[peer.Name] = iniFile
+		iniFiles[node.Name] = iniFile
 	}
 
 	return iniFiles
@@ -124,7 +120,7 @@ func contains(s string, array []string) bool {
 	return false
 }
 
-func hasConnections(name string, peers []structs.Peer) bool {
+func hasConnections(name string, peers []structs.Node) bool {
 	//return true if at least one peer has the name of the node in its ConnectTo list
 	for _, peer := range peers {
 		if contains(name, peer.ConnectedTo) {
