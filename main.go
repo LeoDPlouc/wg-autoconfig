@@ -53,11 +53,21 @@ func parseIni(conf structs.WgConfig) map[string]*ini.File {
 		for i, connection := range conf.Peers {
 			if (connection.Lighthouse || contains(peer.Name, connection.ConnectedTo) || peer.Lighthouse) && peer.Name != connection.Name {
 				sec, _ = iniFile.NewSection("Peer" + fmt.Sprint(i))
-
 				sec.NewKey("PublicKey", connection.PublicKey)
-				sec.NewKey("AllowedIps", connection.AllowedIps)
-				sec.NewKey("Endpoint", connection.Endpoint)
-				sec.NewKey("PersistentKeepalive", fmt.Sprint(conf.PersistentKeepAlive))
+
+				if connection.Lighthouse {
+					sec.NewKey("AllowedIps", connection.AllowedIps)
+					sec.NewKey("Endpoint", connection.Endpoint)
+					sec.NewKey("PersistentKeepalive", fmt.Sprint(conf.PersistentKeepAlive))
+				}
+				if contains(peer.Name, connection.ConnectedTo) {
+					sec.NewKey("AllowedIps", connection.Address)
+					sec.NewKey("Endpoint", connection.Endpoint)
+					sec.NewKey("PersistentKeepalive", fmt.Sprint(conf.PersistentKeepAlive))
+				}
+				if peer.Lighthouse {
+					sec.NewKey("AllowedIps", connection.Address)
+				}
 			}
 		}
 
